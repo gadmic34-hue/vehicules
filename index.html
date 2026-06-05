@@ -350,6 +350,7 @@ const VEHICLES = [
   { id:2, name:"VSAV", type:"Ambulance",            icon:"🚑", color:"#27ae60" },
   { id:3, name:"CCF",  type:"Camion Citerne Forêt", icon:"🌲", color:"#e67e22" },
   { id:4, name:"VLHR", type:"Véhicule Hors Route",  icon:"🚙", color:"#2980b9" },
+  { id:5, name:"FGPD", type:"Fourgon Grande Puissance Dévidoir",  icon:"🚒", color:"#c0392b" }
 ];
 
 const CHECKLISTS = {
@@ -378,6 +379,13 @@ const CHECKLISTS = {
     { cat:"Matériel embarqué", items:["Radio opérationnelle","Lampes torches présentes"] },
     { cat:"Administratif", items:["Carte grise présente","Carnet de bord à jour"] },
   ],
+  5: [
+    { cat:"Sécurité & EPI", items:["Gilets jaunes présents","Trousse de premiers secours","Extincteur de bord"] },
+    { cat:"Moteur & conduite", items:["Niveau carburant OK","Traction 4x4 opérationnelle","Feux avant / arrière fonctionnels"] },
+    { cat:"Matériel embarqué", items:["Radio opérationnelle","Lampes torches présentes"] },
+    { cat:"Armements", items:["Tuyaux 110/40m en échevaux","Tuyaux 110/20m x4","Tuyaux 70/20m x4","Tuyaux 45/20m x4","Tuyaux Aspiraux x20","Flotteurs crépine x4"] },
+  ]
+
 };
 
 let history = JSON.parse(localStorage.getItem('cs_chatuzange_history') || '[]');
