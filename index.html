@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CS Chatuzange">
+<meta name="theme-color" content="#c0392b">
+<title>CS Chatuzange-le-Goubet — Vérification véhicules</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+:root {
+  --red: #c0392b;
+  --red-dark: #96281b;
+  --red-light: #fadbd8;
+  --green: #27ae60;
+  --green-light: #eafaf1;
+  --amber: #e67e22;
+  --amber-light: #fef5e7;
+  --bg: #f4f4f2;
+  --surface: #ffffff;
+  --border: #e0ddd8;
+  --text: #1a1a1a;
+  --muted: #7a7875;
+  --radius: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; background: var(--bg); font-family: 'Barlow', sans-serif; color: var(--text); overflow-x: hidden; }
+
+/* ── HEADER ── */
+.app-header {
+  background: var(--red);
+  padding: 14px 16px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.app-header .flame { font-size: 26px; }
+.app-header h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; color: #fff; line-height: 1.1; }
+.app-header p { font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 1px; }
+.back-btn {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-family: 'Barlow', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: auto;
+}
+
+/* ── NAV TABS ── */
+.nav-tabs {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.nav-tab {
+  flex: 1;
+  padding: 11px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  font-family: 'Barlow', sans-serif;
+}
+.nav-tab.active { color: var(--red); border-bottom-color: var(--red); }
+
+/* ── SCREENS ── */
+.screen { display: none; padding: 16px; min-height: calc(100vh - 110px); }
+.screen.active { display: block; }
+
+/* ── VEHICLE GRID ── */
+.vehicle-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px; }
+.vcard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.1s, box-shadow 0.1s;
+  position: relative;
+  overflow: hidden;
+}
+.vcard:active { transform: scale(0.97); }
+.vcard-accent { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.vcard-icon { font-size: 30px; margin-bottom: 6px; }
+.vcard-name { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--text); }
+.vcard-type { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.vcard-status { margin-top: 8px; }
+.badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.badge-ok { background: var(--green-light); color: var(--green); }
+.badge-warn { background: var(--amber-light); color: var(--amber); }
+.badge-none { background: #f0ede8; color: var(--muted); }
+
+/* ── CHECKLIST SCREEN ── */
+.cl-meta {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+}
+.cl-meta-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.cl-vicon { font-size: 28px; }
+.cl-vname { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; }
+.cl-date { font-size: 12px; color: var(--muted); }
+
+.agent-field { display: flex; align-items: center; gap: 8px; }
+.agent-field label { font-size: 13px; color: var(--muted); white-space: nowrap; }
+.agent-field input {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 14px;
+  font-family: 'Barlow', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+}
+.agent-field input:focus { border-color: var(--red); }
+
+.progress-wrap { margin-bottom: 12px; }
+.progress-info { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+.progress-bar { height: 5px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--green); border-radius: 4px; transition: width 0.3s; }
+
+.cat-group { margin-bottom: 14px; }
+.cat-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+  padding-left: 2px;
+}
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  transition: background 0.1s;
+  user-select: none;
+}
+.item-row.checked { background: var(--green-light); border-color: #a9dfbf; }
+.item-check {
+  width: 22px; height: 22px; min-width: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  transition: all 0.15s;
+}
+.item-row.checked .item-check { background: var(--green); border-color: var(--green); color: #fff; }
+.item-label { font-size: 14px; flex: 1; line-height: 1.3; }
+.item-row.checked .item-label { color: var(--muted); text-decoration: line-through; }
+.flag-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 16px; padding: 2px 4px; opacity: 0.4;
+  transition: opacity 0.15s;
+}
+.flag-btn.on { opacity: 1; }
+
+.anomaly-box { margin-bottom: 14px; }
+.anomaly-box label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 5px; }
+.anomaly-box textarea {
+  width: 100%; border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px; font-size: 13px; font-family: 'Barlow', sans-serif;
+  background: var(--bg); color: var(--text); resize: none; outline: none; min-height: 70px;
+}
+.anomaly-box textarea:focus { border-color: var(--amber); }
+
+.submit-btn {
+  width: 100%; padding: 14px;
+  background: var(--red); color: #fff;
+  border: none; border-radius: var(--radius);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px; font-weight: 700; letter-spacing: 0.03em;
+  cursor: pointer; transition: background 0.15s, transform 0.1s;
+  margin-bottom: 24px;
+}
+.submit-btn:active { transform: scale(0.98); }
+.submit-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; }
+
+/* ── SUCCESS ── */
+.success-wrap { text-align: center; padding: 2rem 1rem; }
+.success-icon { font-size: 56px; margin-bottom: 1rem; }
+.success-title { font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+.success-sub { font-size: 14px; color: var(--muted); margin-bottom: 1.5rem; }
+.anomaly-alert {
+  background: var(--amber-light); border: 1px solid #f0c070;
+  border-radius: var(--radius); padding: 12px 14px;
+  margin-bottom: 1rem; text-align: left;
+}
+.anomaly-alert .al-title { font-size: 13px; font-weight: 600; color: var(--amber); margin-bottom: 4px; }
+.anomaly-alert .al-text { font-size: 13px; color: #7d6608; }
+.home-btn {
+  width: 100%; padding: 14px;
+  background: var(--red); color: #fff;
+  border: none; border-radius: var(--radius);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px; font-weight: 700;
+  cursor: pointer;
+}
+
+/* ── HISTORY ── */
+.hist-empty { text-align: center; padding: 3rem 1rem; color: var(--muted); font-size: 14px; }
+.hist-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px;
+}
+.hist-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.hist-name { font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 700; }
+.hist-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.hist-meta span { margin-right: 8px; }
+
+/* ── STATS ── */
+.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 12px;
+}
+.stat-val { font-family: 'Barlow Condensed', sans-serif; font-size: 30px; font-weight: 700; color: var(--red); }
+.stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* ── INSTALL BANNER ── */
+.install-banner {
+  background: #1a1a1a; color: #fff;
+  border-radius: var(--radius); padding: 12px 14px;
+  margin-bottom: 14px; display: flex; gap: 10px; align-items: flex-start;
+}
+.install-banner .ib-icon { font-size: 20px; min-width: 20px; }
+.install-banner p { font-size: 12px; line-height: 1.5; color: rgba(255,255,255,0.85); }
+.install-banner strong { color: #fff; }
+.install-banner .ib-close { background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 18px; margin-left: auto; padding: 0 0 0 8px; }
+</style>
+</head>
+<body>
+
+<div id="app-header" class="app-header">
+  <div class="flame">🚒</div>
+  <div>
+    <h1>CS CHATUZANGE-LE-GOUBET</h1>
+    <p>Vérification des véhicules</p>
+  </div>
+</div>
+
+<div id="nav" class="nav-tabs">
+  <button class="nav-tab active" onclick="showTab('vehicles')">Véhicules</button>
+  <button class="nav-tab" onclick="showTab('history')">Historique</button>
+  <button class="nav-tab" onclick="showTab('stats')">Bilan</button>
+</div>
+
+<!-- SCREEN : LISTE VÉHICULES -->
+<div id="screen-vehicles" class="screen active">
+  <div id="install-banner" class="install-banner">
+    <span class="ib-icon">📲</span>
+    <p><strong>Installer l'app :</strong> iPhone → Safari → Partager → "Sur l'écran d'accueil" · Android → Chrome → ⋮ → "Ajouter à l'écran d'accueil"</p>
+    <button class="ib-close" onclick="document.getElementById('install-banner').style.display='none'">✕</button>
+  </div>
+  <div class="vehicle-grid" id="vehicle-grid"></div>
+</div>
+
+<!-- SCREEN : CHECKLIST -->
+<div id="screen-checklist" class="screen">
+  <div class="cl-meta">
+    <div class="cl-meta-top">
+      <div class="cl-vicon" id="cl-icon"></div>
+      <div>
+        <div class="cl-vname" id="cl-name"></div>
+        <div class="cl-date" id="cl-date"></div>
+      </div>
+    </div>
+    <div class="agent-field">
+      <label>Pompier :</label>
+      <input type="text" id="agent-input" placeholder="Votre nom ou matricule" autocomplete="off" />
+    </div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-info"><span id="prog-label">0 / 0 items</span><span id="prog-pct">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <div id="checklist-body"></div>
+  <div class="anomaly-box">
+    <label>⚠️ Anomalies / Observations (laisser vide si tout est OK)</label>
+    <textarea id="anomaly-text" placeholder="Décrivez ici tout problème constaté..."></textarea>
+  </div>
+  <button class="submit-btn" id="submit-btn" onclick="submitCheck()" disabled>Valider la vérification</button>
+</div>
+
+<!-- SCREEN : SUCCÈS -->
+<div id="screen-success" class="screen">
+  <div class="success-wrap">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Vérification enregistrée</div>
+    <div class="success-sub" id="success-sub"></div>
+    <div id="anomaly-alert" class="anomaly-alert" style="display:none">
+      <div class="al-title">⚠️ Anomalie signalée — à transmettre au chef de garde</div>
+      <div class="al-text" id="anomaly-alert-text"></div>
+    </div>
+    <button class="home-btn" onclick="goHome()">Retour à l'accueil</button>
+  </div>
+</div>
+
+<!-- SCREEN : HISTORIQUE -->
+<div id="screen-history" class="screen">
+  <div id="history-list"></div>
+</div>
+
+<!-- SCREEN : BILAN -->
+<div id="screen-stats" class="screen">
+  <div class="stats-grid" id="stats-grid"></div>
+  <div id="stats-detail"></div>
+</div>
+
+<script>
+const VEHICLES = [
+  { id:1, name:"FPT",  type:"Fourgon Pompe Tonne", icon:"🚒", color:"#c0392b" },
+  { id:2, name:"VSAV", type:"Ambulance",            icon:"🚑", color:"#27ae60" },
+  { id:3, name:"CCF",  type:"Camion Citerne Forêt", icon:"🌲", color:"#e67e22" },
+  { id:4, name:"VLHR", type:"Véhicule Hors Route",  icon:"🚙", color:"#2980b9" },
+];
+
+const CHECKLISTS = {
+  1: [
+    { cat:"Sécurité & EPI", items:["Extincteur de bord","Gilets jaunes (x2 minimum)","Triangle de signalisation","EPI complets (casque, gants, tenue feu)","Trousse de premiers secours"] },
+    { cat:"Moteur & conduite", items:["Niveau carburant OK","Niveau huile moteur OK","Liquide de refroidissement OK","Pression des pneus OK","Feux avant / arrière fonctionnels"] },
+    { cat:"Matériel embarqué", items:["Radio opérationnelle","Lampes torches présentes et chargées","Outillage de désincarcération présent","Lances et tuyaux en bon état"] },
+    { cat:"Administratif", items:["Carte grise présente","Carnet de bord à jour"] },
+  ],
+  2: [
+    { cat:"Matériel médical", items:["Défibrillateur (DEA) chargé et fonctionnel","Bouteille d'oxygène chargée","Aspirateur de mucosités fonctionnel","Planche de massage cardiaque","Colliers cervicaux (toutes tailles)","Brancard en bon état","Sangles de maintien présentes"] },
+    { cat:"Consommables", items:["Gants jetables en stock suffisant","Masques FFP2 en stock","Pansements compressifs présents","Perfusions et sérums salés présents"] },
+    { cat:"Véhicule", items:["Niveau carburant OK","Feux avant / arrière fonctionnels","Radio opérationnelle"] },
+    { cat:"Administratif", items:["Carte grise présente","Carnet de bord à jour"] },
+  ],
+  3: [
+    { cat:"Citerne & pompe", items:["Niveau d'eau de la citerne OK","Pompe à eau fonctionnelle","Tuyaux et raccords présents","Lance feux de forêt présente"] },
+    { cat:"Sécurité & EPI", items:["EPI feux de forêt (tenue, casque, gants)","Débroussailloir / outils manuels","Gilets haute visibilité"] },
+    { cat:"Moteur & conduite", items:["Niveau carburant OK","Traction 4x4 opérationnelle","Feux avant / arrière fonctionnels"] },
+    { cat:"Matériel embarqué", items:["Radio opérationnelle"] },
+    { cat:"Administratif", items:["Carte grise présente","Carnet de bord à jour"] },
+  ],
+  4: [
+    { cat:"Sécurité & EPI", items:["Gilets jaunes présents","Trousse de premiers secours","Extincteur de bord"] },
+    { cat:"Moteur & conduite", items:["Niveau carburant OK","Traction 4x4 opérationnelle","Feux avant / arrière fonctionnels"] },
+    { cat:"Matériel embarqué", items:["Radio opérationnelle","Lampes torches présentes"] },
+    { cat:"Administratif", items:["Carte grise présente","Carnet de bord à jour"] },
+  ],
+};
+
+let history = JSON.parse(localStorage.getItem('cs_chatuzange_history') || '[]');
+let currentVehicle = null;
+let checked = {};
+let flagged = {};
+
+function saveHistory() { localStorage.setItem('cs_chatuzange_history', JSON.stringify(history)); }
+
+function formatDate(ts) {
+  return new Date(ts).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function timeAgo(ts) {
+  const m = Math.round((Date.now()-ts)/60000);
+  if(m<1) return "à l'instant";
+  if(m<60) return `il y a ${m} min`;
+  const h = Math.round(m/60);
+  if(h<24) return `il y a ${h}h`;
+  return `il y a ${Math.round(h/24)}j`;
+}
+
+function renderVehicles() {
+  const grid = document.getElementById('vehicle-grid');
+  grid.innerHTML = '';
+  VEHICLES.forEach(v => {
+    const last = history.filter(h=>h.vid===v.id).sort((a,b)=>b.ts-a.ts)[0];
+    let badge = '<span class="badge badge-none">Jamais vérifié</span>';
+    if(last) {
+      badge = last.anomaly
+        ? `<span class="badge badge-warn">⚠ Anomalie · ${timeAgo(last.ts)}</span>`
+        : `<span class="badge badge-ok">✓ OK · ${timeAgo(last.ts)}</span>`;
+    }
+    const card = document.createElement('div');
+    card.className = 'vcard';
+    card.innerHTML = `<div class="vcard-accent" style="background:${v.color}"></div><div class="vcard-icon">${v.icon}</div><div class="vcard-name">${v.name}</div><div class="vcard-type">${v.type}</div><div class="vcard-status">${badge}</div>`;
+    card.onclick = () => startCheck(v);
+    grid.appendChild(card);
+  });
+}
+
+function startCheck(v) {
+  currentVehicle = v;
+  checked = {};
+  flagged = {};
+  document.getElementById('cl-icon').textContent = v.icon;
+  document.getElementById('cl-name').textContent = v.name + ' — ' + v.type;
+  document.getElementById('cl-date').textContent = formatDate(Date.now());
+  document.getElementById('agent-input').value = '';
+  document.getElementById('anomaly-text').value = '';
+  renderChecklistBody();
+  showScreen('checklist');
+  document.getElementById('nav').style.display = 'none';
+  document.getElementById('app-header').innerHTML = `
+    <button class="back-btn" onclick="goHome()">← Retour</button>
+    <div style="margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:#fff">${v.icon} ${v.name}</div>`;
+}
+
+function renderChecklistBody() {
+  const body = document.getElementById('checklist-body');
+  body.innerHTML = '';
+  const cl = CHECKLISTS[currentVehicle.id];
+  cl.forEach((section, si) => {
+    const grp = document.createElement('div');
+    grp.className = 'cat-group';
+    grp.innerHTML = `<div class="cat-title">${section.cat}</div>`;
+    section.items.forEach((item, ii) => {
+      const key = `${si}_${ii}`;
+      const row = document.createElement('div');
+      row.className = 'item-row' + (checked[key] ? ' checked' : '');
+      row.id = `item-${key}`;
+      row.innerHTML = `<div class="item-check">${checked[key]?'✓':''}</div><div class="item-label">${item}</div><button class="flag-btn${flagged[key]?' on':''}" onclick="toggleFlag(event,'${key}')" aria-label="Signaler anomalie">🚩</button>`;
+      row.querySelector('.item-check').onclick = () => toggleCheck(key);
+      row.querySelector('.item-label').onclick = () => toggleCheck(key);
+      grp.appendChild(row);
+    });
+    body.appendChild(grp);
+  });
+  updateProgress();
+}
+
+function toggleCheck(key) {
+  checked[key] = !checked[key];
+  const row = document.getElementById(`item-${key}`);
+  row.className = 'item-row' + (checked[key] ? ' checked' : '');
+  row.querySelector('.item-check').textContent = checked[key] ? '✓' : '';
+  updateProgress();
+}
+
+function toggleFlag(e, key) {
+  e.stopPropagation();
+  flagged[key] = !flagged[key];
+  e.currentTarget.className = 'flag-btn' + (flagged[key] ? ' on' : '');
+}
+
+function updateProgress() {
+  const cl = CHECKLISTS[currentVehicle.id];
+  const total = cl.reduce((s,sec)=>s+sec.items.length, 0);
+  const done = Object.values(checked).filter(Boolean).length;
+  const pct = total > 0 ? Math.round(done/total*100) : 0;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-label').textContent = `${done} / ${total} items`;
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('submit-btn').disabled = done < total;
+}
+
+// ── EMAILJS CONFIG ─────────────────────────────────────────────────
+// Après avoir créé votre compte EmailJS, remplacez ces 3 valeurs :
+const EMAILJS_PUBLIC_KEY  = 'VOTRE_PUBLIC_KEY';   // Account → API Keys
+const EMAILJS_SERVICE_ID  = 'VOTRE_SERVICE_ID';   // Email Services → Service ID
+const EMAILJS_TEMPLATE_ID = 'VOTRE_TEMPLATE_ID';  // Email Templates → Template ID
+const DESTINATAIRE        = 'chefs.cischatuzangelegoubet@sdis26.fr';
+// ───────────────────────────────────────────────────────────────────
+
+function buildChecklistSummary() {
+  const cl = CHECKLISTS[currentVehicle.id];
+  let lines = [];
+  cl.forEach((section, si) => {
+    lines.push(`\n== ${section.cat.toUpperCase()} ==`);
+    section.items.forEach((item, ii) => {
+      const key = `${si}_${ii}`;
+      const ok = checked[key] ? '✓' : '✗';
+      const flag = flagged[key] ? ' 🚩' : '';
+      lines.push(`${ok} ${item}${flag}`);
+    });
+  });
+  return lines.join('\n');
+}
+
+function submitCheck() {
+  const agent = document.getElementById('agent-input').value.trim() || 'Anonyme';
+  const anomaly = document.getElementById('anomaly-text').value.trim();
+  const now = Date.now();
+  const entry = { id: now, vid: currentVehicle.id, vname: currentVehicle.name, vicon: currentVehicle.icon, agent, anomaly, ts: now };
+  history.unshift(entry);
+  saveHistory();
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Envoi du rapport…';
+
+  const flagCount = Object.values(flagged).filter(Boolean).length;
+  const statut = anomaly || flagCount > 0 ? '⚠️ ANOMALIE(S) SIGNALÉE(S)' : '✅ CONFORME';
+  const sujet = `[${anomaly || flagCount > 0 ? '⚠️ ANOMALIE' : '✅ OK'}] Vérification ${currentVehicle.name} — ${agent} — ${formatDate(now)}`;
+
+  const templateParams = {
+    to_email:    DESTINATAIRE,
+    subject:     sujet,
+    caserne:     'CS Chatuzange-le-Goubet',
+    vehicule:    `${currentVehicle.icon} ${currentVehicle.name} (${currentVehicle.type})`,
+    pompier:     agent,
+    date_heure:  formatDate(now),
+    statut:      statut,
+    checklist:   buildChecklistSummary(),
+    anomalies:   anomaly || '(aucune)',
+    nb_flags:    String(flagCount),
+  };
+
+  emailjs.init(EMAILJS_PUBLIC_KEY);
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+    .then(() => { console.log('Mail envoyé'); })
+    .catch(err => { console.warn('Erreur mail :', err); })
+    .finally(() => { showSuccess(agent, anomaly); });
+}
+
+function showSuccess(agent, anomaly) {
+  document.getElementById('success-sub').textContent = `${currentVehicle.icon} ${currentVehicle.name} · ${agent} · ${formatDate(Date.now())}`;
+  if(anomaly) {
+    document.getElementById('anomaly-alert').style.display = 'block';
+    document.getElementById('anomaly-alert-text').textContent = anomaly;
+  } else {
+    document.getElementById('anomaly-alert').style.display = 'none';
+  }
+  showScreen('success');
+}
+
+function goHome() {
+  document.getElementById('nav').style.display = 'flex';
+  document.getElementById('app-header').innerHTML = `<div class="flame">🚒</div><div><h1>CS CHATUZANGE-LE-GOUBET</h1><p>Vérification des véhicules</p></div>`;
+  showScreen('vehicles');
+  showTab('vehicles');
+  renderVehicles();
+}
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+}
+
+function showTab(tab) {
+  document.querySelectorAll('.nav-tab').forEach((t,i) => t.classList.toggle('active', ['vehicles','history','stats'][i]===tab));
+  showScreen(tab);
+  if(tab==='history') renderHistory();
+  if(tab==='stats') renderStats();
+  if(tab==='vehicles') renderVehicles();
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  if(history.length===0) {
+    list.innerHTML = '<div class="hist-empty">Aucune vérification enregistrée.<br>Effectuez votre première montée en véhicule !</div>';
+    return;
+  }
+  list.innerHTML = history.map(h => `
+    <div class="hist-card">
+      <div class="hist-top">
+        <div>
+          <div class="hist-name">${h.vicon} ${h.vname}</div>
+          <div class="hist-meta"><span>👤 ${h.agent}</span><span>🕐 ${timeAgo(h.ts)}</span></div>
+        </div>
+        <span class="badge ${h.anomaly?'badge-warn':'badge-ok'}">${h.anomaly?'⚠ Anomalie':'✓ Conforme'}</span>
+      </div>
+      ${h.anomaly ? `<div style="margin-top:8px;font-size:12px;color:#7d6608;background:#fef5e7;border-radius:6px;padding:7px 10px">${h.anomaly}</div>` : ''}
+    </div>`).join('');
+}
+
+function renderStats() {
+  const total = history.length;
+  const anomalies = history.filter(h=>h.anomaly).length;
+  const last7 = history.filter(h=>(Date.now()-h.ts)<7*86400000).length;
+  const grid = document.getElementById('stats-grid');
+  grid.innerHTML = `
+    <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-label">Vérifications totales</div></div>
+    <div class="stat-card"><div class="stat-val">${anomalies}</div><div class="stat-label">Anomalies signalées</div></div>
+    <div class="stat-card"><div class="stat-val">${last7}</div><div class="stat-label">Cette semaine</div></div>
+    <div class="stat-card"><div class="stat-val">${VEHICLES.length}</div><div class="stat-label">Véhicules suivis</div></div>`;
+  const detail = document.getElementById('stats-detail');
+  detail.innerHTML = '<div class="cat-title" style="margin-bottom:8px">Par véhicule</div>' +
+    VEHICLES.map(v => {
+      const n = history.filter(h=>h.vid===v.id).length;
+      const last = history.filter(h=>h.vid===v.id).sort((a,b)=>b.ts-a.ts)[0];
+      return `<div class="hist-card" style="display:flex;justify-content:space-between;align-items:center">
+        <div><div class="hist-name">${v.icon} ${v.name}</div><div class="hist-meta">${n} vérification(s) · ${last?timeAgo(last.ts):'jamais'}</div></div>
+        <div class="stat-val" style="font-size:22px">${n}</div>
+      </div>`;
+    }).join('');
+}
+
+renderVehicles();
+</script>
+</body>
+</html>
