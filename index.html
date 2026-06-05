@@ -346,21 +346,21 @@ html, body { height: 100%; background: var(--bg); font-family: 'Barlow', sans-se
 
 <script>
 const VEHICLES = [
-  { id:1, name:"FPT",  type:"Fourgon Pompe Tonne", icon:"🚒", color:"#c0392b" },
-  { id:2, name:"VSAV", type:"Ambulance",            icon:"🚑", color:"#27ae60" },
+  { id:2, name:"FPT",  type:"Fourgon Pompe Tonne", icon:"🚒", color:"#c0392b" },
+  { id:1, name:"VSAV", type:"Ambulance",            icon:"🚑", color:"#27ae60" },
   { id:3, name:"CCF",  type:"Camion Citerne Forêt", icon:"🌲", color:"#e67e22" },
-  { id:4, name:"VLHR", type:"Véhicule Hors Route",  icon:"🚙", color:"#c0392b" },
-  { id:5, name:"FGPD", type:"Fourgon Grande Puissance Dévidoir",  icon:"🚒", color:"#c0392b" }
+  { id:5, name:"VLHR", type:"Véhicule Hors Route",  icon:"🚙", color:"#c0392b" },
+  { id:4, name:"FGPD", type:"Fourgon Grande Puissance Dévidoir",  icon:"🚒", color:"#c0392b" }
 ];
 
 const CHECKLISTS = {
-  1: [
+  2: [
     { cat:"Sécurité & EPI", items:["Extincteur de bord","Gilets jaunes (x2 minimum)","Triangle de signalisation","EPI complets (casque, gants, tenue feu)","Trousse de premiers secours"] },
     { cat:"Moteur & conduite", items:["Niveau carburant OK","Niveau huile moteur OK","Liquide de refroidissement OK","Pression des pneus OK","Feux avant / arrière fonctionnels"] },
     { cat:"Matériel embarqué", items:["Radio opérationnelle","Lampes torches présentes et chargées","Outillage de désincarcération présent","Lances et tuyaux en bon état"] },
     { cat:"Administratif", items:["Carte grise présente","Carnet de bord à jour"] },
   ],
-  2: [
+  1: [
     { cat:"Matériel médical", items:["Défibrillateur (DEA) chargé et fonctionnel","Bouteille d'oxygène chargée","Aspirateur de mucosités fonctionnel","Planche de massage cardiaque","Colliers cervicaux (toutes tailles)","Brancard en bon état","Sangles de maintien présentes"] },
     { cat:"Consommables", items:["Gants jetables en stock suffisant","Masques FFP2 en stock","Pansements compressifs présents","Perfusions et sérums salés présents"] },
     { cat:"Véhicule", items:["Niveau carburant OK","Feux avant / arrière fonctionnels","Radio opérationnelle"] },
@@ -373,13 +373,13 @@ const CHECKLISTS = {
     { cat:"Matériel embarqué", items:["Radio opérationnelle"] },
     { cat:"Administratif", items:["Carte grise présente","Carnet de bord à jour"] },
   ],
-  4: [
+  5: [
     { cat:"Sécurité & EPI", items:["Gilets jaunes présents","Trousse de premiers secours","Extincteur de bord"] },
     { cat:"Moteur & conduite", items:["Niveau carburant OK","Traction 4x4 opérationnelle","Feux avant / arrière fonctionnels"] },
     { cat:"Matériel embarqué", items:["Radio opérationnelle","Lampes torches présentes"] },
     { cat:"Administratif", items:["Carte grise présente","Carnet de bord à jour"] },
   ],
-  5: [
+  4: [
     { cat:"Sécurité & EPI", items:["Gilets jaunes présents","Trousse de premiers secours","Extincteur de bord"] },
     { cat:"Moteur & conduite", items:["Niveau carburant OK","Traction 4x4 opérationnelle","Feux avant / arrière fonctionnels"] },
     { cat:"Matériel embarqué", items:["Radio opérationnelle","Lampes torches présentes"] },
